@@ -3,14 +3,27 @@ import random
 from aiocoap import Context, Message, resource, CHANGED
 #import time
 
-class TemperatureResource(resource.Resource):
-    async def render_get(self, request):
-        temperatura = round(random.uniform(20.0, 30.0), 2)
-        print(f"Enviando temperatura: {temperatura}°C")
-        #time.sleep(5)
-        return Message(payload=str(temperatura).encode('utf-8'))
+class TemperatureResource(resource.ObservableResource):
+    def __init__(self):
+        super().__init__()
+        self.temperatura = self._gerar_temperatura()
+        asyncio.create_task(self._atualizar_temperatura())
 
-class LampadaResource(resource.Resource):
+    def _gerar_temperatura(self):
+        return round(random.uniform(20.0, 30.0), 2)
+
+    async def _atualizar_temperatura(self):
+        while True:
+            await asyncio.sleep(3)  # Atualiza a cada 3 segundos
+            self.temperatura = self._gerar_temperatura()
+            print(f"[UPDATE] Nova temperatura: {self.temperatura}°C")
+            self.updated_state()  # Notifica os clientes que observaram
+
+    async def render_get(self, request):
+        print(f"Enviando temperatura atual: {self.temperatura}°C")
+        return Message(payload=str(self.temperatura).encode('utf-8'))
+    
+class LampadaResource(resource.ObservableResource):
     def __init__(self):
         super().__init__()
         self.lampada = "off"  # Estado inicial da lâmpada

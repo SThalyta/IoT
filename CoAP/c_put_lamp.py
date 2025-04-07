@@ -5,7 +5,7 @@ async def main():
     context = await Context.create_client_context()
 
     payload = b"off" 
-    request = Message(code=PUT, payload=payload, uri="coap://127.0.0.1/lamcpada")
+    request = Message(code=PUT, payload=payload, uri="coap://127.0.0.1/lampada")
 
     response = await context.request(request).response
 
